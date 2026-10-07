@@ -1,0 +1,32 @@
+JAVA Question
+Resource Pool Implementation
+Instructions
+Implement a thread-safe resource pool
+In this exercise we will implement a simple thread-safe resource pool,
+i.e. ThreadSafeResourcePool.
+A ResourcePool manages the lifecycle of reusable resource objects that are expensive to create due to their nature.
+Common examples of such implementations include database connection pools, thread pools, and worker pools.
+Keep in mind that X operates with extremely high concurrency,
+i.e. processing thousands of transactions per second.
+Therefore, the solution should be very efficient in highly concurrent environments.
+The skeleton of the solution is already created with corresponding unit tests.
+You will have to fill in the implementation to make the tests pass.
+As you implement the tasks, you are free to introduce new methods and refactor code to align with your quality best practices.
+Task 1: Implement the constructor
+As a warmup task, implement the constructor of ThreadSafeResourcePool, and run the tests that belong to this first task.
+(In later tasks you can extend this constructor further.)
+Key Requirements
+• Apply edge case and constraint checks to parameters
+Task 2: Implement basic functionality
+Create a functioning resource pool.
+Key Requirements
+Implement the basic operations of ThreadSafeResourcePool: initializePool, acquire and release.
+For simplicity, you don't have to worry about cleanup operations for the resources or the pool
+Return basic
+metrics: getAvailableResourceCount, getTotalResourceCount, getinUseResourceCount, getMaxPoolS
+Keep the implementation thread safe
+Task 3: Eviction of resources
+Extend the resource pool with resource eviction capability.
+Key Requirements
+Implement evictidleResources,
+which removes elements from the pool of freely available resources if they have stayed unused for longer than the specified idle timeout.

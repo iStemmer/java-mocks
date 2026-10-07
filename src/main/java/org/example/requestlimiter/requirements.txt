@@ -1,0 +1,77 @@
+JAVA — Question 1
+Payment Request Rate Limiter
+
+You are implementing a rate limiter for a payment API.
+
+Each merchant is allowed to make at most 100 requests per minute.
+
+You are given the following interface:
+
+public interface RateLimiter {
+
+    boolean allow(String merchantId);
+}
+
+Implement:
+
+public class MerchantRateLimiter implements RateLimiter {
+
+    public MerchantRateLimiter() {
+        // your implementation
+    }
+
+    @Override
+    public boolean allow(String merchantId) {
+        // your implementation
+    }
+}
+Requirements
+Each merchantId has its own independent limit.
+A merchant can make at most 100 requests within a rolling 60-second window.
+If the merchant has exceeded the limit, return false.
+Otherwise return true.
+Different merchants must not affect each other's limits.
+The implementation must be thread-safe.
+Assume many merchants can use the system concurrently.
+Do not use one unnecessary global lock around the entire operation.
+The implementation should not grow without bound forever for inactive merchants.
+Examples
+
+For merchant "M1":
+
+request 1  -> true
+request 2  -> true
+...
+request 100 -> true
+request 101 -> false
+
+After the oldest requests fall outside the 60-second window, new requests should become allowed again.
+
+For another merchant:
+
+M1 -> 100 requests
+M2 -> 100 requests
+
+Both should independently be allowed.
+
+What I want you to think about
+
+Before coding, decide:
+
+What data structure will you use?
+What is the time complexity of allow()?
+What happens when 10,000 merchants call concurrently?
+How will you make the operation thread-safe?
+How will you remove inactive merchants?
+What happens if two threads call allow("M1") at exactly the same time?
+Testing
+
+Write unit tests for at least:
+
+First request is allowed.
+100 requests are allowed.
+101st request is rejected.
+Different merchants have independent limits.
+Requests become eligible again after the window expires.
+Concurrent calls for the same merchant.
+Inactive merchant state can eventually be removed.

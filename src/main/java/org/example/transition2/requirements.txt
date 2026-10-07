@@ -1,0 +1,120 @@
+Your task
+
+Implement transition() and isValidTransition().
+
+Requirements
+1. Payment must exist
+
+If the payment doesn't exist, throw:
+
+IllegalArgumentException
+2. Invalid transitions must be rejected
+
+For example:
+
+CREATED → CAPTURED
+CAPTURED → AUTHORISED
+REFUSED → AUTHORISED
+
+must not be allowed.
+
+3. Concurrent requests must be handled correctly
+
+This is the important part.
+
+The following must never result in an invalid final state:
+
+Thread 1: CREATED → AUTHORISED
+Thread 2: CREATED → REFUSED
+
+You must make the transition atomic for a particular payment.
+
+However, don't unnecessarily block transitions for different payments.
+
+For example:
+
+Thread 1 → payment P1
+Thread 2 → payment P2
+Thread 3 → payment P3
+
+should be able to proceed concurrently.
+
+4. Don't use a global lock
+
+This would technically provide synchronization:
+
+synchronized
+public Payment transition(...) {
+    ...
+}
+
+but it is not a good solution because one payment update would block unrelated payments.
+
+Think about the scalability requirement: the system may eventually handle 20× more volume.
+
+5. Preserve the existing repository
+
+You should work with the provided:
+
+ConcurrentHashMap
+
+rather than replacing the whole repository with a completely different architecture.
+
+Expected behavior
+
+Given:
+
+Payment payment = new Payment(
+        "P1",
+        PaymentStatus.CREATED
+);
+
+repository.save(payment);
+
+Then:
+
+service.transition("P1", PaymentStatus.AUTHORISED);
+
+should result in:
+
+P1 = AUTHORISED
+
+Then:
+
+service.transition("P1", PaymentStatus.CAPTURED);
+
+should result in:
+
+P1 = CAPTURED
+
+But:
+
+service.transition("P1", PaymentStatus.REFUSED);
+
+must fail because:
+
+CAPTURED → REFUSED
+
+is invalid.
+
+Important concurrency test
+
+You should write a test where 100 threads simultaneously attempt:
+
+CREATED → AUTHORISED
+
+and verify that the final payment state is:
+
+AUTHORISED
+
+Then create another test where multiple threads simultaneously attempt:
+
+CREATED → AUTHORISED
+CREATED → REFUSED
+
+and verify that:
+
+the final state is either AUTHORISED or REFUSED
+it is never an inconsistent/invalid state
+exactly one transition wins
+no data corruption occurs

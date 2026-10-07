@@ -1,0 +1,96 @@
+Requirements
+1. Process events
+
+Only CAPTURED events should affect the aggregation.
+
+For example:
+
+P1 CAPTURED 100
+P1 CAPTURED 50
+P2 CAPTURED 200
+P1 REFUNDED 20
+
+Result:
+
+P1 -> 150
+P2 -> 200
+
+AUTHORISED and REFUNDED events should not change the captured amount.
+
+2. Concurrency
+
+process() will be called concurrently by many threads.
+
+For example, 100 threads may simultaneously process:
+
+P1 CAPTURED 10
+
+The final result must be:
+
+P1 -> 1000
+
+No lost updates are allowed.
+
+3. Performance
+
+The system may process millions of events.
+
+Your solution should:
+
+avoid a global synchronized lock
+avoid scanning all payments for every event
+provide approximately O(1) average processing time per event
+allow events for different payments to be processed concurrently
+4. Validation
+
+Reject invalid events:
+
+paymentId == null
+eventType == null
+amount <= 0
+
+Throw:
+
+IllegalArgumentException
+5. Snapshot
+
+Implement:
+
+public Map<String, Long> getAllCapturedAmounts()
+
+The caller must not be able to modify the aggregator's internal state through the returned map.
+
+Example
+
+Input:
+
+P1 CAPTURED 100
+P2 AUTHORISED 500
+P1 CAPTURED 250
+P1 REFUNDED 50
+P2 CAPTURED 700
+P1 CAPTURED 50
+
+Expected:
+
+P1 -> 400
+P2 -> 700
+What I want from you
+
+Implement:
+
+PaymentEventAggregator
+
+You can change:
+
+HashMap
+
+to an appropriate concurrent data structure.
+
+You may add helper methods/classes if useful, but don't over-engineer it.
+
+Then provide at least 3 tests, including:
+
+Normal aggregation
+Invalid input
+A real concurrency test with many threads updating the same payment

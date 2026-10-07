@@ -1,0 +1,205 @@
+JAVA — Question 2
+Payment Service — State Transitions & Idempotency
+
+You inherit an incomplete payment service.
+
+A payment has:
+
+paymentId
+merchantId
+amount
+status
+
+Possible statuses:
+
+RECEIVED
+AUTHORISED
+CAPTURED
+REFUNDED
+CANCELLED
+
+Implement the service:
+
+public class PaymentService {
+
+    public Payment createPayment(String paymentId,
+                                 String merchantId,
+                                 long amount) {
+        // implementation
+    }
+
+    public Payment transition(String paymentId,
+                               PaymentStatus newStatus) {
+        // implementation
+    }
+
+    public Payment getPayment(String paymentId) {
+        // implementation
+    }
+}
+Requirements
+1. Validation
+
+A payment is valid only if:
+
+paymentId != null and not blank
+merchantId != null and not blank
+amount > 0
+
+Invalid requests should fail with an appropriate exception.
+
+2. Creation
+
+A newly created payment starts in:
+
+RECEIVED
+
+For example:
+
+createPayment("P100", "M1", 1000)
+
+produces:
+
+P100
+M1
+1000
+RECEIVED
+
+3. Duplicate payment IDs
+
+The same paymentId cannot be used for two different payments.
+
+This must fail:
+
+createPayment("P100", "M1", 1000)
+createPayment("P100", "M1", 2000)
+
+You must not silently overwrite the existing payment.
+
+4. Valid state transitions
+
+Only these transitions are allowed:
+
+RECEIVED     -> AUTHORISED
+RECEIVED     -> CANCELLED
+
+AUTHORISED   -> CAPTURED
+AUTHORISED   -> CANCELLED
+
+CAPTURED     -> REFUNDED
+
+Everything else is invalid.
+
+For example:
+
+RECEIVED -> CAPTURED       INVALID
+CAPTURED -> AUTHORISED    INVALID
+REFUNDED -> CAPTURED      INVALID
+CANCELLED -> AUTHORISED   INVALID
+5. Idempotent transitions
+
+This is important.
+
+If a payment is already:
+
+AUTHORISED
+
+and the following request is received again:
+
+transition("P100", AUTHORISED)
+
+it should not fail as a conflicting transition.
+
+The operation should behave idempotently and return the existing payment state.
+
+But:
+
+AUTHORISED -> CAPTURED
+
+is a real state change.
+
+6. Thread safety
+
+Assume multiple requests can operate on the same payment simultaneously.
+
+For example:
+
+Thread A: RECEIVED -> AUTHORISED
+Thread B: RECEIVED -> CANCELLED
+
+Your implementation must not allow the payment to end up in an invalid or inconsistent state.
+
+7. Scale
+
+Initially you may have:
+
+100,000 payments
+
+but eventually:
+
+100 million payments
+
+Your design should avoid unnecessary operations that become expensive as the number of payments grows.
+
+Example
+
+Starting state:
+
+P1 -> RECEIVED
+
+Then:
+
+transition(P1, AUTHORISED)
+
+Result:
+
+P1 -> AUTHORISED
+
+Then:
+
+transition(P1, AUTHORISED)
+
+Result:
+
+P1 -> AUTHORISED
+
+Then:
+
+transition(P1, CAPTURED)
+
+Result:
+
+P1 -> CAPTURED
+
+Then:
+
+transition(P1, AUTHORISED)
+
+This must fail because:
+
+CAPTURED -> AUTHORISED
+
+is not a valid transition.
+
+Testing
+
+Write tests for:
+
+valid creation
+invalid amount
+duplicate payment ID
+every valid transition
+invalid transitions
+idempotent transition
+unknown payment
+concurrent transitions
+edge cases
+Senior-level follow-up
+
+After your implementation, answer:
+
+Why did you choose your data structures and synchronization strategy,
+and what would you change if this service had 20× the current traffic?
+
+The assessment specifically asks you to think about scalability at 20× volume,
+so don't treat this as an afterthought.
